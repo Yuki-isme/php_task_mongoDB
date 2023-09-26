@@ -589,4 +589,20 @@ class BillController extends Controller
 
         echo json_encode($response);
     }
+
+    public function quickUpdate()
+    {
+        $param = [
+            '$set' => [
+                $_POST['name'] => $_POST['value'],
+            ]
+        ];
+
+        $this->model->updateBill(['_id' => intval($_POST['id'])], $param);
+
+        $response['success'] = true;
+        $response['message'] = "Cập nhật bill thành công.";
+
+        echo json_encode($response);
+    }
 }

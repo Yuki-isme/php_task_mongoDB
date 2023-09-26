@@ -19,6 +19,7 @@ class Index {
     this.validateOnAll(); // validate cho form
     this.validateAndSubmit(); // validate lần 2 trước khi
     this.confirmDelete(); // alert and confirm delete bill
+    this.quickEdit();
   }
 
   dataTable() {
@@ -1142,6 +1143,90 @@ class Index {
           $("#date_modified_last").val(date_created_last_);
           alertify.success(response.message, {
             //thông báo thành công
+            cssClass: "ajs-success",
+          });
+        } else {
+          alertify.error(response.message, {
+            //thông báo lỗi
+            cssClass: "ajs-error",
+          });
+        }
+      },
+      error: () => {
+        alertify.error("Có lỗi xảy ra khi gửi yêu cầu.", {
+          //báo lỗi hệ thống
+          cssClass: "ajs-error",
+        });
+      },
+    });
+  }
+
+  quickEdit() {
+    const self = this;
+    $(document).on("change", "#update-account", function () {
+      var id = $(this).data("id");
+      var name = "account";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-service", function () {
+      var id = $(this).data("id");
+      var name = "service";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-status", function () {
+      var id = $(this).data("id");
+      var name = "status";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-category", function () {
+      var id = $(this).data("id");
+      var name = "category";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-close_date", function () {
+      var id = $(this).data("id");
+      var name = "close_date";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-date_created", function () {
+      var id = $(this).data("id");
+      var name = "date_created";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+
+    $(document).on("change", "#update-date_modified", function () {
+      var id = $(this).data("id");
+      var name = "date_modified";
+      var value = $(this).val();
+      self.quickUpdate(id, name, value);
+    });
+  }
+
+  quickUpdate(dataId, name_, value_) {
+    $.ajax({
+      url: this.url_main + "/quickUpdate",
+      type: "POST",
+      data: {
+        id: dataId,
+        name: name_,
+        value: value_,
+      },
+      dataType: "json",
+      success: (response) => {
+        if (response.success) {
+          alertify.success(response.message, {
+            // thông báo thành công
             cssClass: "ajs-success",
           });
         } else {
