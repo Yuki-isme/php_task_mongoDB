@@ -28,6 +28,9 @@
     <script src="/public/assets/lib/alertify/alertify.min.js"></script>
     <script src="/public/assets/lib/data-table/dataTables.min.js"></script>
     <script src="/public/assets/lib/js/script.js"></script>
+    <script>
+        const index = new Index('<?= isset($bills)  ? '/bill' : '/archive' ?>', <?= isset($ids) ? json_encode($ids) : 'null' ?>);
+    </script>
 </body>
 
 </html>

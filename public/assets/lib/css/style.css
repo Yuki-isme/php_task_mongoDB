@@ -1,0 +1,88 @@
+/* Đổi màu nền cho thông báo thành công */
+.alertify-notifier .ajs-message.ajs-success {
+    background-color: #4caf50;
+    color: #fff;
+    border-radius: 0.5rem;
+    /* Bo tròn góc 2.5rem */
+    text-align: left;
+    width: 200px;
+    right: 200px !important;
+}
+
+/* Đổi màu nền cho thông báo lỗi */
+.alertify-notifier .ajs-message.ajs-error {
+    background-color: #f44336;
+    color: #fff;
+    border-radius: 0.5rem;
+    /* Bo tròn góc 2.5rem */
+    text-align: left;
+    width: 200px;
+    right: 200px !important;
+}
+
+/* Đổi màu nền cho thông báo cảnh báo */
+.alertify-notifier .ajs-message.ajs-warning {
+    background-color: #ffc107;
+    color: #fff;
+    border-radius: 0.5rem;
+    /* Bo tròn góc 2.5rem */
+    text-align: left;
+    width: 200px;
+    right: 200px !important;
+}
+
+/* Loại bỏ viền của ô input */
+.custom-input-search {
+    border: none;
+    outline: none;
+    width: 100%;
+}
+
+/* Tạo khung và bo tròn cho input và biểu tượng "i" */
+.custom-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    /* width: 150px; */
+}
+
+/* Điều chỉnh kích thước của biểu tượng "i" */
+.custom-input i {
+    margin-left: 5px;
+    /* Khoảng cách giữa input và biểu tượng "i" */
+}
+
+.filter-icon {
+    position: relative;
+}
+
+.filter-check {
+    position: absolute;
+    /* Sử dụng vị trí tuyệt đối */
+    top: 100%;
+    /* Đặt top bằng 100% để di chuyển phía dưới */
+    right: 0;
+    /* Đặt left bằng 0 để nó nằm ngay dưới */
+    z-index: 999;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    display: none;
+    width: 200px;
+}
+
+.filter-check ul {
+    list-style-type: none;
+    /* Ẩn đánh dấu đầu của mỗi mục trong danh sách */
+    padding: 0;
+    /* Loại bỏ khoảng cách dưới cùng của danh sách */
+    margin: 0;
+    /* Loại bỏ khoảng cách lề của danh sách */
+}
+
+.bilTable ul li label {
+    margin-left: 10px;
+}
+

@@ -19,8 +19,8 @@ class Route
     function __construct($uri) {
         $this->uri = $uri;
         if ($this->uri == '/') {
-            $this->controller = '';
-            $this->action = '';
+            $this->controller = 'bill';
+            $this->action = 'index';
             $this->params = [];
 
             return 0;
