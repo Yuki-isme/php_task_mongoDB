@@ -8,10 +8,13 @@ class Index {
   }
 
   initialize() {
-    this.searchColumn();
+    this.login(); // login
     this.transPage();
     this.transPerPage();
-    this.login(); // login
+    this.search();
+    this.searchColumn();
+    this.hideShowCheck();
+    this.submitCheck();
   }
 
   dataTable() {
@@ -82,7 +85,238 @@ class Index {
       this.sendSearchPerPageAjax(1);
     });
   }
+  //tìm kiếm chung => $or
+  search() {
+    $(document).on("keyup", "#search", () => {
+      this.sendSearchPerPageAjax(1);
+    });
+  }
+  //tìm kiếm riêng => $and
+  searchColumn() {
+    const self = this; // Lưu tham chiếu của this vào biến self
+    $(document).on("keydown", ".custom-input-search", function (event) {
+      if (event.which === 13) {
+        // Bắt sự kiện khi phím "Enter" được nhấn (mã phím 13)
+        self.sendSearchPerPageAjax(1); // Gọi hàm gửi AJAX tại đây
+      }
+    });
 
+    // $(document).on("blur", ".custom-input-search", function () {
+    //   self.sendSearchPerPageAjax(1); // Gọi hàm gửi AJAX khi input mất focus (bỏ chuột ra khỏi input)
+    // });
+  }
+  //ẩn hiện các filter check
+  hideShowCheck() {
+    $(document).on("click", "#filter-account", function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-account-check").is(":hidden")) {
+        $("#filter-account-check").show();
+      } else {
+        $("#filter-account-check").hide();
+      }
+    });
+
+    // Sự kiện khi bấm vào filter-service
+    $(document).on("click", "#filter-service", function () {
+      // Kiểm tra nếu filter-service-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-service-check").is(":hidden")) {
+        $("#filter-service-check").show();
+      } else {
+        $("#filter-service-check").hide();
+      }
+    });
+
+    // Sự kiện khi bấm vào filter-status
+    $(document).on("click", "#filter-status", function () {
+      // Kiểm tra nếu filter-status-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-status-check").is(":hidden")) {
+        $("#filter-status-check").show();
+      } else {
+        $("#filter-status-check").hide();
+      }
+    });
+
+    // Sự kiện khi bấm vào filter-category
+    $(document).on("click", "#filter-category", function () {
+      // Kiểm tra nếu filter-category-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-category-check").is(":hidden")) {
+        $("#filter-category-check").show();
+      } else {
+        $("#filter-category-check").hide();
+      }
+    });
+
+    $("#filter-bill-id").click(function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-bill-id-check").is(":hidden")) {
+        $("#filter-bill-id-check").show();
+      } else {
+        $("#filter-bill-id-check").hide();
+      }
+    });
+
+    $("#filter-amount").click(function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-amount-check").is(":hidden")) {
+        $("#filter-amount-check").show();
+      } else {
+        $("#filter-amount-check").hide();
+      }
+    });
+
+    $(document).on("click", "#filter-close_date", function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-close_date-check").is(":hidden")) {
+        $("#filter-close_date-check").show();
+      } else {
+        $("#filter-close_date-check").hide();
+      }
+    });
+
+    $(document).on("click", "#filter-date_created", function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-date_created-check").is(":hidden")) {
+        $("#filter-date_created-check").show();
+      } else {
+        $("#filter-date_created-check").hide();
+      }
+    });
+
+    $(document).on("click", "#filter-date_modified", function () {
+      // Kiểm tra nếu filter-account-check đang ẩn thì hiện lên, ngược lại ẩn đi
+      if ($("#filter-date_modified-check").is(":hidden")) {
+        $("#filter-date_modified-check").show();
+      } else {
+        $("#filter-date_modified-check").hide();
+      }
+    });
+
+    // Sự kiện khi bấm vào Check All Account
+    $(document).on("click", ".check-all-account", function () {
+      var isChecked = $(this).prop("checked");
+      $(".account-checkbox").prop("checked", isChecked);
+    });
+
+    // Sự kiện khi bấm vào Check All Service
+    $(document).on("click", ".check-all-service", function () {
+      var isChecked = $(this).prop("checked");
+      $(".service-checkbox").prop("checked", isChecked);
+    });
+
+    // Sự kiện khi bấm vào Check All Status
+    $(document).on("click", ".check-all-status", function () {
+      var isChecked = $(this).prop("checked");
+      $(".status-checkbox").prop("checked", isChecked);
+    });
+
+    // Sự kiện khi bấm vào Check All Category
+    $(document).on("click", ".check-all-category", function () {
+      var isChecked = $(this).prop("checked");
+      $(".category-checkbox").prop("checked", isChecked);
+    });
+
+    // Sự kiện khi bấm vào checkbox con Account
+    $(document).on("click", ".account-checkbox", function () {
+      var allChecked =
+        $(".account-checkbox").length === $(".account-checkbox:checked").length;
+      $(".check-all-account").prop("checked", allChecked);
+    });
+
+    // Sự kiện khi bấm vào checkbox con Service
+    $(document).on("click", ".service-checkbox", function () {
+      var allChecked =
+        $(".service-checkbox").length === $(".service-checkbox:checked").length;
+      $(".check-all-service").prop("checked", allChecked);
+    });
+
+    // Sự kiện khi bấm vào checkbox con Status
+    $(document).on("click", ".status-checkbox", function () {
+      var allChecked =
+        $(".status-checkbox").length === $(".status-checkbox:checked").length;
+      $(".check-all-status").prop("checked", allChecked);
+    });
+
+    // Sự kiện khi bấm vào checkbox con Category
+    $(document).on("click", ".category-checkbox", function () {
+      var allChecked =
+        $(".category-checkbox").length ===
+        $(".category-checkbox:checked").length;
+      $(".check-all-category").prop("checked", allChecked);
+    });
+
+    $(document).on("click", "#all_close_date", function () {
+      if ($(this).prop("checked")) {
+        $("#close_date_begin").val("");
+        $("#close_date_last").val("");
+      }
+    });
+
+    $(document).on("click", "#all_date_created", function () {
+      if ($(this).prop("checked")) {
+        $("#date_created_begin").val("");
+        $("#date_created_last").val("");
+      }
+    });
+
+    $(document).on("click", "#all_date_modified", function () {
+      if ($(this).prop("checked")) {
+        $("#date_modified_begin").val("");
+        $("#date_modified_last").val("");
+      }
+    });
+
+    $(document).on(
+      "change",
+      "#close_date_begin, #close_date_last",
+      function () {
+        if (
+          $("#close_date_begin").val() == "" &&
+          $("#close_date_last").val() == ""
+        ) {
+          $("#all_close_date").prop("checked", true);
+        } else {
+          $("#all_close_date").prop("checked", false);
+        }
+      }
+    );
+
+    $(document).on(
+      "change",
+      "#date_created_begin, #date_created_last",
+      function () {
+        if (
+          $("#date_created_begin").val() == "" &&
+          $("#date_created_last").val() == ""
+        ) {
+          $("#all_date_created").prop("checked", true);
+        } else {
+          $("#all_date_created").prop("checked", false);
+        }
+      }
+    );
+
+    $(document).on(
+      "change",
+      "#date_modified_begin, #date_modified_last",
+      function () {
+        if (
+          $("#date_modified_begin").val() == "" &&
+          $("#date_modified_last").val() == ""
+        ) {
+          $("#all_date_modified").prop("checked", true);
+        } else {
+          $("#all_date_modified").prop("checked", false);
+        }
+      }
+    );
+  }
+  //submit bộ lọc
+  submitCheck() {
+    $(document).on("click", "#submit-filter", () => {
+      this.sendSearchPerPageAjax(1);
+    });
+  }
+  //lấy dữ liệu dựa trên các ô search, perPage và bọ lọc
   sendSearchPerPageAjax(perPage_) {
     var search_account_ = $("#search_account").val();
     var search_bill_id_ = $("#search_bill_id").val();
