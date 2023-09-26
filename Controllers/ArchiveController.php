@@ -3,22 +3,17 @@
 require_once '../Models/Bill.php';
 require_once '../Models/Archive.php';
 
-class BillController extends Controller
+class ArchiveController extends Controller
 {
-    // các biến cho model
     private $model;
-    private $archive;
+    private $bill;
 
-
-    // Khởi tạo cho các biến gọi tới model
     function __construct()
     {
-        $this->model = new Bill();
-        $this->archive = new Archive();
+        $this->model = new Archive();
+        $this->bill = new Bill();
     }
 
-
-    // lấy ra danh sach bill và trả về view
     public function index()
     {
         $param = $this->check();
@@ -38,6 +33,9 @@ class BillController extends Controller
         $dateModifiedLast = isset($_SESSION['data']['dateModifiedLast']) ? $_SESSION['data']['dateModifiedLast'] : "";
 
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            $page = intval($_POST['page']);
+            $perPage = intval($_POST['perPage']);
+            $search = $_POST['search'];
             $page = intval($_POST['page']);
             $perPage = intval($_POST['perPage']);
             $search = $_POST['search'];
@@ -83,7 +81,7 @@ class BillController extends Controller
             ];
         }
 
-        $bills = $this->model->getBillList(
+        $archives = $this->model->getArchiveList(
             $search,
             $page,
             $perPage,
@@ -116,7 +114,7 @@ class BillController extends Controller
             $dateModifiedBegin,
             $dateModifiedLast
         );
-        $ids = json_encode($this->model->getListIdBill(
+        $ids = json_encode($this->model->getListIdArchive(
             $search,
             $param,
             $searchColumn,
@@ -131,7 +129,7 @@ class BillController extends Controller
             $dateModifiedBegin,
             $dateModifiedLast
         ));
-        $total = $this->model->getTotalAmountBill(
+        $total = $this->model->getTotalAmountArchive(
             $search,
             $param,
             $searchColumn,
@@ -151,14 +149,10 @@ class BillController extends Controller
         $categories = $this->model->getCategoryList();
         $statuses = $this->model->getStatusList();
 
-        if (
-            isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-        ) {
-
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             $data = [
-                'bills' => $bills,
-                'page' => $page,
+                'archives' => $archives,
+                'page' => $_POST['page'],
                 'totalPage' => $totalPage,
                 'total' => $total,
                 'accounts' => $accounts,
@@ -168,7 +162,7 @@ class BillController extends Controller
             ];
 
             ob_start();
-            include('../view/bill/update-view.php');
+            include('../view/archive/update-view.php');
             $view = ob_get_clean();
             $response = [
                 'success' => true,
@@ -181,22 +175,17 @@ class BillController extends Controller
             return;
         }
 
-
-
-        return $this->render(
-            'index',
-            [
-                'bills' => $bills,
-                'page' => $page, 'perPage' => $perPage,
-                'totalPage' => $totalPage,
-                'ids' => $ids,
-                'total' => $total,
-                'accounts' => $accounts,
-                'services' => $services,
-                'statuses' => $statuses,
-                'categories' => $categories
-            ]
-        );
+        return $this->render('index', [
+            'archives' => $archives,
+            'page' => $page,
+            'perPage' => $perPage,
+            'totalPage' => $totalPage,
+            'ids' => $ids,
+            'total' => $total,
+            'accounts' => $accounts,
+            'services' => $services,
+            'statuses' => $statuses,
+            'categories' => $categories
+        ]);
     }
-
 }
