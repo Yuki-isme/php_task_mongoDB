@@ -181,8 +181,6 @@ class BillController extends Controller
             return;
         }
 
-
-
         return $this->render(
             'index',
             [
@@ -198,5 +196,137 @@ class BillController extends Controller
             ]
         );
     }
+    
+    // hàm lưu bill, cập nhật table, trả về json
+    public function trans()
+    {
+        $param = $this->check();
+        $ids = $_POST['check'];
 
+        foreach ($ids as $id) {
+            $bill = $this->model->getBillById(intval($id));
+
+            $this->archive->createArchive([
+                '_id' => $this->archive->getIdArchive(),
+                'bill_id' => $bill->bill_id,
+                'amount' => $bill->amount,
+                'account' => $bill->account,
+                'service' => $bill->service,
+                'category' => $bill->category,
+                'status' => $bill->status,
+                'user_id' => $bill->user_id,
+                'comment' => $bill->comment,
+                'close_date' => $bill->close_date,
+                'date_created' => $bill->date_created,
+                'date_modified' => $bill->date_modified,
+            ]);
+
+            $this->model->destroy(intval($id));
+        }
+
+        $page = intval($_POST['page']);
+        $perPage = intval($_POST['perPage']);
+        $search = $_POST['search'];
+        $searchColumn = [
+            'account' => $_POST['search_account'],
+            'bill_id' => $_POST['search_bill_id'],
+            'amount' => $_POST['search_amount'],
+            'service' => $_POST['search_service'],
+            'status' => $_POST['search_status'],
+            'category' => $_POST['search_category'],
+        ];
+
+        $accountValues = $_POST['accountValues'];
+        $serviceValues = $_POST['serviceValues'];
+        $statusValues = $_POST['statusValues'];
+        $categoryValues = $_POST['categoryValues'];
+        $closeDateBegin = $_POST['closeDateBegin'];
+        $closeDateLast = $_POST['closeDateLast'];
+        $dateCreatedBegin = $_POST['dateCreatedBegin'];
+        $dateCreatedLast = $_POST['dateCreatedLast'];
+        $dateModifiedBegin = $_POST['dateModifiedBegin'];
+        $dateModifiedLast = $_POST['dateModifiedLast'];
+        $data = [
+            'bills' => $this->model->getBillList(
+                $search,
+                $page,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'page' => $page,
+            'totalPage' => $this->model->getTotalPage(
+                $search,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'total' => $this->model->getTotalAmountBill(
+                $search,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'accounts' => $this->model->getAccountList(),
+            'services' => $this->model->getServiceList(),
+            'statuses' => $this->model->getStatusList(),
+            'categories' => $this->model->getCategoryList(),
+        ];
+        $ids = json_encode($this->model->getListIdBill(
+            $search,
+            $param,
+            $searchColumn,
+            $accountValues,
+            $serviceValues,
+            $statusValues,
+            $categoryValues,
+            $closeDateBegin,
+            $closeDateLast,
+            $dateCreatedBegin,
+            $dateCreatedLast,
+            $dateModifiedBegin,
+            $dateModifiedLast
+        ));
+        ob_start();
+        include('../view/bill/update-view.php');
+        $view = ob_get_clean();
+
+        $response = [
+            'success' => true,
+            'message' => 'Lưu bill thành công.',
+            'view' => $view,
+            'ids' => $ids,
+        ];
+
+        echo json_encode($response);
+    }
 }
