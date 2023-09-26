@@ -196,7 +196,7 @@ class BillController extends Controller
             ]
         );
     }
-    
+
     // hàm lưu bill, cập nhật table, trả về json
     public function trans()
     {
@@ -323,6 +323,266 @@ class BillController extends Controller
         $response = [
             'success' => true,
             'message' => 'Lưu bill thành công.',
+            'view' => $view,
+            'ids' => $ids,
+        ];
+
+        echo json_encode($response);
+    }
+
+    //trả về view tạo bill và các select
+    public function create()
+    {
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        return $this->render(
+            'create',
+            [
+                'accounts' => $accounts,
+                'services' => $services,
+                'categories' => $categories,
+                'statuses' => $statuses
+            ]
+        );
+    }
+
+    // gọi check validate và thực hiện tạo bill, trả về json
+    public function store()
+    {
+        $this->check();
+        $bills = $this->model->getAllBill();
+        $archives = $this->archive->getAllArchive();
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        $response = [
+            'success' => true,
+            'message' => '',
+        ];
+
+        $response = $this->checkBillId($_POST['bill_id'], $response);
+        $response = $this->checkAmount($_POST['amount'], $response);
+        $response = $this->checkExist($bills, $archives, $_POST['bill_id'], $response, 0);
+        $response = $this->checkForeign($accounts, $services, $categories, $statuses, $_POST['account_id'], $_POST['service_id'], $_POST['category_id'], $_POST['status_id'], $response);
+        if (!$response['success']) {
+            echo json_encode($response);
+            return;
+        }
+
+        $this->model->createBill([
+            '_id' => $this->model->getIdBill(),
+            'bill_id' => $_POST['bill_id'],
+            'amount' => intval(ltrim($_POST['amount'])),
+            'account' => $this->model->getNameById('accounts', intval($_POST['account_id'])),
+            'service' => $this->model->getNameById('services', intval($_POST['service_id'])),
+            'category' => $this->model->getNameById('categories', intval($_POST['category_id'])),
+            'status' => $this->model->getNameById('statuses', intval($_POST['status_id'])),
+            'comment' => $_POST['comment'],
+            'user_id' => $_SESSION['user']['_id'],
+            'close_date' => $_POST['close_date'],
+            'date_created' => $_POST['date_created'],
+            'date_modified' => $_POST['date_modified'],
+        ]);
+
+        $response['success'] = true;
+        $response['message'] = "Tạo bill thành công.";
+
+        echo json_encode($response);
+    }
+
+    // trả về form được điền thông tin của bill cần chỉnh sửa và các select
+    public function edit($id)
+    {
+        $this->check();
+        $bill = $this->model->getBillById(intval($id));
+
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        return $this->render(
+            'create',
+            [
+                'bill' => $bill,
+                'accounts' => $accounts,
+                'services' => $services,
+                'categories' => $categories,
+                'statuses' => $statuses
+            ]
+        );
+    }
+
+    // thực hiện check validate, exist và cập nhật bill theo id, trả về json
+    public function update()
+    {
+        $bill = $this->model->getBillById(intval($_POST['id']));
+        $bills = $this->model->getAllBill();
+        $archives = $this->archive->getAllArchive();
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        $response = [
+            'success' => true,
+            'message' => '',
+        ];
+
+        $response = $this->checkBillId($_POST['bill_id'], $response);
+        $response = $this->checkAmount($_POST['amount'], $response);
+        $response = $this->checkExist($bills, $archives, $_POST['bill_id'], $response, intval($_POST['id']));
+        $response = $this->checkForeign(
+            $accounts,
+            $services,
+            $categories,
+            $statuses,
+            $_POST['account_id'],
+            $_POST['service_id'],
+            $_POST['category_id'],
+            $_POST['status_id'],
+            $response
+        );
+        if (!$response['success']) {
+            echo json_encode($response);
+            return;
+        }
+
+        $param = [
+            '$set' => [
+                'bill_id' => $_POST['bill_id'],
+                'amount' => intval(ltrim($_POST['amount'])),
+                'account' => $this->model->getNameById('accounts', intval($_POST['account_id'])),
+                'service' => $this->model->getNameById('services', intval($_POST['service_id'])),
+                'category' => $this->model->getNameById('categories', intval($_POST['category_id'])),
+                'status' => $this->model->getNameById('statuses', intval($_POST['status_id'])),
+                'comment' => $_POST['comment'],
+                'user_id' => $bill->user_id,
+                'close_date' => $_POST['close_date'],
+                'date_created' => $_POST['date_created'],
+                'date_modified' => $_POST['date_modified'],
+            ]
+        ];
+
+        $this->model->updateBill(['_id' => intval($_POST['id'])], $param);
+
+        $response['success'] = true;
+        $response['message'] = "Cập nhật bill thành công.";
+
+        echo json_encode($response);
+    }
+
+    //xóa bill theo id, trả về json
+    public function destroy()
+    {
+        $param = $this->check();
+
+        $this->model->destroy(intval($_POST['id']));
+
+        $page = intval($_POST['page']);
+        $perPage = intval($_POST['perPage']);
+        $search = $_POST['search'];
+        $searchColumn = [
+            'account' => $_POST['search_account'],
+            'bill_id' => $_POST['search_bill_id'],
+            'amount' => $_POST['search_amount'],
+            'service' => $_POST['search_service'],
+            'status' => $_POST['search_status'],
+            'category' => $_POST['search_category'],
+        ];
+
+        $accountValues = $_POST['accountValues'];
+        $serviceValues = $_POST['serviceValues'];
+        $statusValues = $_POST['statusValues'];
+        $categoryValues = $_POST['categoryValues'];
+        $closeDateBegin = $_POST['closeDateBegin'];
+        $closeDateLast = $_POST['closeDateLast'];
+        $dateCreatedBegin = $_POST['dateCreatedBegin'];
+        $dateCreatedLast = $_POST['dateCreatedLast'];
+        $dateModifiedBegin = $_POST['dateModifiedBegin'];
+        $dateModifiedLast = $_POST['dateModifiedLast'];
+        $data = [
+            'bills' => $this->model->getBillList(
+                $search,
+                $page,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'page' => $page,
+            'totalPage' => $this->model->getTotalPage(
+                $search,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'total' => $this->model->getTotalAmountBill(
+                $search,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'accounts' => $this->model->getAccountList(),
+            'services' => $this->model->getServiceList(),
+            'statuses' => $this->model->getStatusList(),
+            'categories' => $this->model->getCategoryList(),
+        ];
+
+        ob_start();
+        include('../view/bill/update-view.php');
+        $view = ob_get_clean();
+        $ids = json_encode($this->model->getListIdBill(
+            $search,
+            $param,
+            $searchColumn,
+            $accountValues,
+            $serviceValues,
+            $statusValues,
+            $categoryValues,
+            $closeDateBegin,
+            $closeDateLast,
+            $dateCreatedBegin,
+            $dateCreatedLast,
+            $dateModifiedBegin,
+            $dateModifiedLast
+        ));
+        $response = [
+            'success' => true,
+            'message' => 'Xóa bill thành công.',
             'view' => $view,
             'ids' => $ids,
         ];

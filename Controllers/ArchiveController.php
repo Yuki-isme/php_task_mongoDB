@@ -321,4 +321,195 @@ class ArchiveController extends Controller
 
         echo json_encode($response);
     }
+
+    public function edit($id)
+    {
+        $this->check();
+
+        $archive = $this->model->getArchiveById(intval($id));
+
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        return $this->render('form', [
+            'archive' => $archive,
+            'accounts' => $accounts,
+            'services' => $services,
+            'categories' => $categories,
+            'statuses' => $statuses
+        ]);
+    }
+
+    public function update()
+    {
+        $param = $this->check();
+        $bill = $this->model->getArchiveById(intval($_POST['id']));
+        $bills = $this->bill->getAllBill();
+        $archives = $this->model->getAllArchive();
+        $accounts = $this->model->getAccountList();
+        $services = $this->model->getServiceList();
+        $categories = $this->model->getCategoryList();
+        $statuses = $this->model->getStatusList();
+
+        $response = [
+            'success' => true,
+            'message' => '',
+        ];
+
+        $response = $this->checkBillId($_POST['bill_id'], $response);
+        $response = $this->checkAmount($_POST['amount'], $response);
+        $response = $this->checkExist($bills, $archives, $_POST['bill_id'], $response, intval($_POST['id']));
+        $response = $this->checkForeign(
+            $accounts,
+            $services,
+            $categories,
+            $statuses,
+            $_POST['account_id'],
+            $_POST['service_id'],
+            $_POST['category_id'],
+            $_POST['status_id'],
+            $response
+        );
+        if (!$response['success']) {
+            echo json_encode($response);
+            return;
+        }
+
+        $param = [
+            '$set' => [
+                'bill_id' => $_POST['bill_id'],
+                'amount' => intval(ltrim($_POST['amount'])),
+                'account' => $this->model->getNameById('accounts', intval($_POST['account_id'])),
+                'service' => $this->model->getNameById('services', intval($_POST['service_id'])),
+                'category' => $this->model->getNameById('categories', intval($_POST['category_id'])),
+                'status' => $this->model->getNameById('statuses', intval($_POST['status_id'])),
+                'user_id' => $bill->user_id,
+                'comment' => $_POST['comment'],
+                'close_date' => $_POST['close_date'],
+                'date_created' => $_POST['date_created'],
+                'date_modified' => $_POST['date_modified'],
+            ]
+        ];
+
+        $this->model->updateArchive(['_id' => intval($_POST['id'])], $param);
+
+        $response['success'] = true;
+        $response['message'] = "Cập nhật bill thành công.";
+
+        echo json_encode($response);
+    }
+
+    public function destroy()
+    {
+        $param = $this->check();
+
+        $this->model->destroy(intval($_POST['id']));
+
+        $page = intval($_POST['page']);
+        $perPage = intval($_POST['perPage']);
+        $search = $_POST['search'];
+        $searchColumn = [
+            'account' => $_POST['search_account'],
+            'bill_id' => $_POST['search_bill_id'],
+            'amount' => $_POST['search_amount'],
+            'service' => $_POST['search_service'],
+            'status' => $_POST['search_status'],
+            'category' => $_POST['search_category'],
+        ];
+
+        $accountValues = $_POST['accountValues'];
+        $serviceValues = $_POST['serviceValues'];
+        $statusValues = $_POST['statusValues'];
+        $categoryValues = $_POST['categoryValues'];
+        $closeDateBegin = $_POST['closeDateBegin'];
+        $closeDateLast = $_POST['closeDateLast'];
+        $dateCreatedBegin = $_POST['dateCreatedBegin'];
+        $dateCreatedLast = $_POST['dateCreatedLast'];
+        $dateModifiedBegin = $_POST['dateModifiedBegin'];
+        $dateModifiedLast = $_POST['dateModifiedLast'];
+        $data = [
+            'archives' => $this->model->getArchiveList(
+                $search,
+                $page,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'page' => $page,
+            'totalPage' => $this->model->getTotalPage(
+                $search,
+                $perPage,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'total' => $this->model->getTotalAmountArchive(
+                $search,
+                $param,
+                $searchColumn,
+                $accountValues,
+                $serviceValues,
+                $statusValues,
+                $categoryValues,
+                $closeDateBegin,
+                $closeDateLast,
+                $dateCreatedBegin,
+                $dateCreatedLast,
+                $dateModifiedBegin,
+                $dateModifiedLast
+            ),
+            'accounts' => $this->model->getAccountList(),
+            'services' => $this->model->getServiceList(),
+            'statuses' => $this->model->getStatusList(),
+            'categories' => $this->model->getCategoryList(),
+        ];
+
+        ob_start();
+        include('../view/archive/update-view.php');
+        $view = ob_get_clean();
+        $ids = json_encode($this->model->getListIdArchive(
+            $search,
+            $param,
+            $searchColumn,
+            $accountValues,
+            $serviceValues,
+            $statusValues,
+            $categoryValues,
+            $closeDateBegin,
+            $closeDateLast,
+            $dateCreatedBegin,
+            $dateCreatedLast,
+            $dateModifiedBegin,
+            $dateModifiedLast
+        ));
+        $response = [
+            'success' => true,
+            'message' => 'Xóa bill thành công.',
+            'view' => $view,
+            'ids' => $ids,
+        ];
+
+        echo json_encode($response);
+    }
 }
